@@ -1,0 +1,17 @@
+# Coverage directory used by tools like pytest
+coverage
+
+# dotenv environment variables file
+.env
+
+# python virtual environment & cache
+venv
+.venv/
+.venv
+__pycache__/
+__pycache__
+.ipynb_checkpoints/
+.pytest_cache/
+*.py[cod]
+*$py.class
+.coverage
