@@ -1,4 +1,5 @@
 import customtkinter
+import tkinter as tk
 from database import Database
 from logger import Logger
 
@@ -9,6 +10,8 @@ class App(customtkinter.CTk):
     """ Main application window """
     def __init__(self, db: Database):
         super().__init__()
+
+        self.db = db
 
         # configure window
         self.title("Datatricks")
@@ -25,7 +28,7 @@ class App(customtkinter.CTk):
         self.sidebar_frame.grid_rowconfigure(4, weight=1)
         self.logo_label = customtkinter.CTkLabel(self.sidebar_frame, text="Datatricks", font=customtkinter.CTkFont(size=20, weight="bold"))
         self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 10))
-        self.sidebar_button_1 = customtkinter.CTkButton(self.sidebar_frame, command=db.add_data, text="Download Data")
+        self.sidebar_button_1 = customtkinter.CTkButton(self.sidebar_frame, command=self.get_file_path, text="Download Data")
         self.sidebar_button_1.grid(row=1, column=0, padx=20, pady=10)
         self.sidebar_button_2 = customtkinter.CTkButton(self.sidebar_frame, command=db.clear, text="Clear Database")
         self.sidebar_button_2.grid(row=2, column=0, padx=20, pady=10)
@@ -49,6 +52,11 @@ class App(customtkinter.CTk):
         # set default values
         self.appearance_mode_optionemenu.set("Dark")
         self.scaling_optionemenu.set("100%")
+        
+    def get_file_path(self):
+        """ Open a CTkFileDialog """
+        dialog = tk.filedialog.askopenfilename()
+        self.db.add_data(dialog)
 
     def open_input_dialog_event(self):
         """ Open a CTkInputDialog """

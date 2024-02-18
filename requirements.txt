@@ -1,2 +1,3 @@
 customtkinter
 sqlite3
+pandas

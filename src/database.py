@@ -1,5 +1,7 @@
 import sqlite3
 from logger import Logger
+import json
+import pandas as pd
 
 class Database:
     """ Database class to access and modify the database"""
@@ -15,22 +17,44 @@ class Database:
             return connection
         except Exception as e:
             self.logger.log("Error connecting to database: " + str(e), "ERROR")
+            return None
             
-    def database_request(self, request):
+    def database_request(self, request, params=None):
         """Execute a request on the database and return the result"""
         try:
             cur = self.connection.cursor()
-            cur.execute(request)
+            if params:
+                cur.execute(request, params)
+            else:
+                cur.execute(request)
             data = cur.fetchall()
+            if request.lower().startswith(("insert", "update", "delete")):
+                self.connection.commit()  # commit the changes
             cur.close()
             return data
         except Exception as e:
             self.logger.log("Error executing request: " + str(e), "ERROR")
+            return None
 
-    def add_data(self):
+    def add_data(self, file_path: str):
         """ Add data to the database """
-        self.database_request("CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT, age INTEGER)")
+        
+        # check if table data has data
+        if self.database_request("SELECT * FROM data") is not None:
+            self.logger.log("Database already has data", "INFO")
+            return
+
+        # read the data from the file
+        df = pd.read_json(file_path)
+
+        # convert lists to strings
+        df = df.map(lambda x: json.dumps(x) if isinstance(x, list) else x)
+
+        # add data to the database
+        df.to_sql('data', self.connection, if_exists='replace', index=False)
+        self.logger.log("Data added to database", "INFO")
 
     def clear(self):
         """ Clear the database """ # drop everything
-        self.database_request("DROP TABLE users")
+        self.database_request("DROP TABLE data")
+        self.logger.log("Database cleared", "INFO")

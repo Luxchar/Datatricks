@@ -4,17 +4,19 @@ from app import App
 
 def main():
     """ Main function """
-      
-    # init custom logger
-    logger = Logger()
-    logger.log("Application started", "INFO")
-    
-    db = Database('./database.db', logger)
-    app = App(db)
-    logger.set_log_box(app.log_box)
-    
-    app.mainloop()
-    logger.log("Application closed", "INFO")
+
+    try:
+        logger = Logger() # init custom logger
+        logger.log("Application started", "INFO")
+
+        db = Database('./database.db', logger) # init database
+        app = App(db) # init app
+        logger.set_log_box(app.log_box) # set log box to logger
+
+        app.mainloop()
+        logger.log("Application closed", "INFO")
+    except Exception as e:
+        print("Error:", e)
 
 if __name__ == "__main__":
     main()
