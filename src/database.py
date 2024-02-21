@@ -35,6 +35,20 @@ class Database:
         except Exception as e:
             self.logger.log("Error executing request: " + str(e), "ERROR")
             return None
+        
+    def get_data_from_column(self, column: str):
+        """ Get data from a column"""
+        data = self.database_request("SELECT " + column + " FROM data")
+        if data is None:
+            return None
+        return [d[0] for d in data]
+
+    def get_values(self):
+        """ Get all columns names from the database """
+        data = self.database_request("PRAGMA table_info(data)")
+        if data is None:
+            return None
+        return [d[1] for d in data]
 
     def add_data(self, file_path: str):
         """ Add data to the database """

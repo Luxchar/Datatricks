@@ -1,7 +1,10 @@
-import customtkinter
 import tkinter as tk
+import customtkinter
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import pandas as pd
 from database import Database
-from logger import Logger
+from tkinter import messagebox
 
 customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
@@ -48,10 +51,47 @@ class App(customtkinter.CTk):
         self.log_box.grid(row=3, column=1, columnspan=2, padx=(20, 20), pady=(20, 20), sticky="nsew")
         self.log_box.insert(0, "Logs will appear here")
         self.log_box.configure(state="readonly")
+        
+        self.combobox_1 = customtkinter.CTkComboBox(self,values=db.get_values(), command=self.plot_data)
+        self.combobox_1.grid(row=0, column=1, padx=20, pady=(10, 10))
+        
+        self.combobox_2 = customtkinter.CTkComboBox(self,values=db.get_values(), command=self.plot_data)
+        self.combobox_2.grid(row=0, column=2, padx=20, pady=(10, 10))
+
+        # create plot frame
+        self.plot_frame = customtkinter.CTkFrame(self, corner_radius=0)
+        self.plot_frame.grid(row=1, column=1, columnspan=2, padx=(20, 20), pady=(20, 20), sticky="nsew")
+        self.plot_frame.grid_columnconfigure(0, weight=1)
+        self.plot_frame.grid_rowconfigure(0, weight=1)
 
         # set default values
         self.appearance_mode_optionemenu.set("Dark")
         self.scaling_optionemenu.set("100%")
+        
+    def plot_data(self):
+        """ Plot data from the database """
+        column_1 = self.combobox_1.get()
+        column_2 = ""
+        
+        if column_1 == "" or column_2 == "":
+            messagebox.showerror("Error", "Please select columns")
+            return
+        
+        row1 = self.db.get_data_from_column(column_1)
+        row2 = self.db.get_data_from_column(column_2)
+        if row1 is None or row2 is None:
+            messagebox.showerror("Error", "Error getting data from database")
+            return
+        
+        data = pd.DataFrame({column_1: row1, column_2: row2})
+        fig, ax = plt.subplots()
+        ax.plot(data["x"], data["y"])
+        ax.set_xlabel("x")
+        ax.set_ylabel("y")
+        ax.set_title("Data Plot")
+        canvas = FigureCanvasTkAgg(fig, master=self.plot_frame)
+        canvas.draw()
+        canvas.get_tk_widget().pack(fill="both", expand=True)
         
     def get_file_path(self):
         """ Open a CTkFileDialog """
