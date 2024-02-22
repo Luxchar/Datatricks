@@ -1,4 +1,6 @@
 customtkinter
-sqlite3
 pandas
 matplotlib
+requests
+pytest
+python-docx
