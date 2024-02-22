@@ -13,12 +13,14 @@ class App(customtkinter.CTk):
     """ Main application window """
     def __init__(self, db: Database):
         super().__init__()
+        
+        self.protocol("WM_DELETE_WINDOW", self.close_window)
 
         self.db = db
 
         # configure window
         self.title("Datatricks")
-        self.geometry(f"{1100}x{580}")
+        self.geometry(f"{1200}x{650}")
 
         # configure grid layout (4x4)
         self.grid_columnconfigure(1, weight=1)
@@ -68,30 +70,39 @@ class App(customtkinter.CTk):
         self.appearance_mode_optionemenu.set("Dark")
         self.scaling_optionemenu.set("100%")
         
-    def plot_data(self):
+    def close_window(self):
+        """ Close all matplotlib plots and then close the window """
+        plt.close('all')
+        self.destroy()  # Assuming this is a tkinter window
+        
+    def plot_data(self, _):
         """ Plot data from the database """
         column_1 = self.combobox_1.get()
-        column_2 = ""
-        
+        column_2 = self.combobox_2.get()
+
         if column_1 == "" or column_2 == "":
             messagebox.showerror("Error", "Please select columns")
             return
-        
+
         row1 = self.db.get_data_from_column(column_1)
         row2 = self.db.get_data_from_column(column_2)
         if row1 is None or row2 is None:
             messagebox.showerror("Error", "Error getting data from database")
             return
-        
+
         data = pd.DataFrame({column_1: row1, column_2: row2})
         fig, ax = plt.subplots()
-        ax.plot(data["x"], data["y"])
-        ax.set_xlabel("x")
-        ax.set_ylabel("y")
+        ax.plot(data[column_1], data[column_2], "o")
+        ax.set_xlabel(column_1)
+        ax.set_ylabel(column_2)
         ax.set_title("Data Plot")
-        canvas = FigureCanvasTkAgg(fig, master=self.plot_frame)
-        canvas.draw()
-        canvas.get_tk_widget().pack(fill="both", expand=True)
+        # Clear the previous plot before drawing a new one
+        if hasattr(self, 'canvas'):
+            self.canvas.get_tk_widget().destroy()
+
+        self.canvas = FigureCanvasTkAgg(fig, master=self.plot_frame)
+        self.canvas.draw()
+        self.canvas.get_tk_widget().pack(fill="both", expand=True)
         
     def get_file_path(self):
         """ Open a CTkFileDialog """
